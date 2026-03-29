@@ -1,0 +1,58 @@
+# sxhkdrc — keybindings for bspwm
+# sxhkd is the hotkey daemon that bspwm delegates all key handling to.
+
+# ── Terminal ───────────────────────────────────────────────────────────────────
+ctrl + t
+    kitty
+
+# ── Window management ──────────────────────────────────────────────────────────
+
+# Close focused window
+super + q
+    bspc node -c
+
+# Kill focused window (force)
+super + shift + q
+    bspc node -k
+
+# Toggle fullscreen
+super + f
+    bspc node -t ~fullscreen
+
+# Toggle floating
+super + shift + f
+    bspc node -t ~floating
+
+# Toggle monocle (full-desktop single window)
+super + m
+    bspc desktop -l next
+
+# ── Focus / movement ───────────────────────────────────────────────────────────
+
+# Focus in direction
+super + {h,j,k,l}
+    bspc node -f {west,south,north,east}
+
+# Move focused window in direction
+super + shift + {h,j,k,l}
+    bspc node -s {west,south,north,east}
+
+# ── Workspaces ─────────────────────────────────────────────────────────────────
+
+# Switch to workspace 1–5
+super + {1-5}
+    bspc desktop -f '^{1-5}'
+
+# Move window to workspace 1–5
+super + shift + {1-5}
+    bspc node -d '^{1-5}'
+
+# ── System ─────────────────────────────────────────────────────────────────────
+
+# Reload sxhkd config
+super + Escape
+    pkill -USR1 -x sxhkd
+
+# Quit bspwm
+super + alt + q
+    bspc quit
