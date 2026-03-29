@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # install.sh — sets up the ascii-cube-desktop on Arch Linux
 # Run as your normal user (sudo will be prompted where needed)
+#
+# GPU passthrough is NOT required. This script gets you a fully working
+# cube desktop accessible from your Mac via RDP. Add the GPU later.
 
 set -e
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ── Packages ───────────────────────────────────────────────────────────────────
 
 echo "==> Installing packages..."
 sudo pacman -S --needed --noconfirm \
@@ -19,7 +24,11 @@ sudo pacman -S --needed --noconfirm \
     python \
     ttf-jetbrains-mono-nerd \
     unclutter \
-    ly
+    ly \
+    xrdp \
+    xorgxrdp \
+    pulseaudio \
+    pulseaudio-module-xrdp
 
 echo ""
 echo "==> NOTE: xwinwrap must be installed from the AUR."
@@ -27,7 +36,7 @@ echo "    If you have yay:  yay -S xwinwrap-git"
 echo "    If you have paru: paru -S xwinwrap-git"
 echo ""
 
-# ── Copy configs ───────────────────────────────────────────────────────────────
+# ── Configs ────────────────────────────────────────────────────────────────────
 
 echo "==> Copying configs..."
 
@@ -38,12 +47,12 @@ cp "$REPO_DIR/config/bspwm/sxhkdrc"   ~/.config/bspwm/sxhkdrc
 cp "$REPO_DIR/config/picom/picom.conf" ~/.config/picom/picom.conf
 cp "$REPO_DIR/config/kitty/kitty.conf" ~/.config/kitty/kitty.conf
 
-# ── Install cube ───────────────────────────────────────────────────────────────
+chmod +x ~/.config/bspwm/bspwmrc
+
+# ── Cube ───────────────────────────────────────────────────────────────────────
 
 cp "$REPO_DIR/cube.py"        ~/.config/cube/cube.py
 cp "$REPO_DIR/launch_cube.sh" ~/.config/cube/launch_cube.sh
-
-chmod +x ~/.config/bspwm/bspwmrc
 chmod +x ~/.config/cube/launch_cube.sh
 
 # ── .xinitrc ───────────────────────────────────────────────────────────────────
@@ -57,20 +66,64 @@ else
     echo "==> ~/.xinitrc installed"
 fi
 
+# ── xrdp session ───────────────────────────────────────────────────────────────
+# Tell xrdp to launch bspwm when a client connects
+
+echo "==> Configuring xrdp session..."
+
+cat > ~/.xsession << 'EOF'
+#!/bin/sh
+# xrdp session entry point
+xsetroot -solid black
+unclutter --timeout 1 &
+exec bspwm
+EOF
+chmod +x ~/.xsession
+
+# ── xrdp service ───────────────────────────────────────────────────────────────
+
+echo "==> Enabling xrdp..."
+sudo systemctl enable xrdp.service
+sudo systemctl enable xrdp-sesman.service
+
+# Add user to the tsusers group required by xrdp
+sudo usermod -aG tsusers "$USER"
+
 # ── ly login manager ───────────────────────────────────────────────────────────
 
-echo ""
-echo "==> Enabling ly display manager..."
+echo "==> Enabling ly..."
 sudo systemctl enable ly.service
 
+# ── Static IP reminder ─────────────────────────────────────────────────────────
+
 echo ""
+echo "==> ACTION REQUIRED: Set a static IP for this VM."
+echo "    Edit /etc/systemd/network/20-wired.network or use nmtui."
+echo "    You'll need this IP to connect from your Mac."
+echo ""
+
+# ── Done ───────────────────────────────────────────────────────────────────────
+
 echo "================================================"
 echo "  Install complete."
 echo ""
-echo "  Next steps:"
-echo "  1. Install xwinwrap from AUR (see above)"
-echo "  2. Reboot — ly will greet you at login"
-echo "  3. Log in, then: startx"
-echo "  4. Black screen + spinning cube = success"
+echo "  Remaining steps:"
+echo ""
+echo "  1. Install xwinwrap from AUR:"
+echo "     yay -S xwinwrap-git"
+echo ""
+echo "  2. Set a static IP for this VM (see above)"
+echo ""
+echo "  3. Reboot"
+echo "     sudo reboot"
+echo ""
+echo "  4. On your Mac:"
+echo "     - Install Microsoft Remote Desktop (App Store)"
+echo "     - Add PC → enter this VM's IP"
+echo "     - Enable 'Redirect clipboard' and 'Redirect sound'"
+echo "     - Connect → log in via ly → cube desktop"
+echo ""
 echo "  5. Ctrl+T to open a terminal"
+echo ""
+echo "  GPU passthrough can be added later — see Notion for Phase 5-7."
 echo "================================================"
