@@ -23,7 +23,7 @@ exec xwinwrap \
     -- xterm \
         -into WID \
         -bg black \
-        -fg "#00ff41" \
+        -fg white \
         -fa "JetBrainsMono Nerd Font Mono" \
         -fs 14 \
         -bc \

@@ -8,6 +8,7 @@ Usage:
     xwinwrap ... -- xterm -into WID -bg black -e python3 cube.py
 """
 
+import colorsys
 import curses
 import math
 import time
@@ -95,27 +96,62 @@ EDGES = [
 
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
+def hsv_to_curses(h, s=1.0, v=1.0):
+    """Convert HSV (0–1 each) to a curses 0–1000 RGB triple."""
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    return int(r * 1000), int(g * 1000), int(b * 1000)
+
+
 def main(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(True)
 
     curses.start_color()
     curses.use_default_colors()
-    curses.init_pair(1, curses.COLOR_GREEN, -1)   # edges
-    curses.init_pair(2, curses.COLOR_WHITE, -1)   # vertices
+
+    # Use high color indices so we don't clobber the 16 standard colors
+    COLOR_EDGE   = 16
+    COLOR_VERTEX = 17
+
+    rgb_supported = curses.can_change_color() and curses.COLORS >= 256
+    if rgb_supported:
+        curses.init_color(COLOR_EDGE,   0, 1000, 0)   # initial green — overwritten each frame
+        curses.init_color(COLOR_VERTEX, 1000, 1000, 1000)
+        curses.init_pair(1, COLOR_EDGE,   -1)
+        curses.init_pair(2, COLOR_VERTEX, -1)
+    else:
+        # Fallback: cycle through the 6 basic curses colors manually
+        CYCLE = [curses.COLOR_RED, curses.COLOR_YELLOW, curses.COLOR_GREEN,
+                 curses.COLOR_CYAN, curses.COLOR_BLUE, curses.COLOR_MAGENTA]
+        curses.init_pair(1, curses.COLOR_GREEN, -1)
+        curses.init_pair(2, curses.COLOR_WHITE,  -1)
 
     ax = 0.0   # rotation angle around X
     ay = 0.0   # rotation angle around Y
     az = 0.0   # slow roll around Z
 
+    hue = 0.0          # current hue position (0–1)
+    HUE_SPEED = 0.004  # how fast the rainbow cycles
+
     SPEED_X = 0.018
     SPEED_Y = 0.027
     SPEED_Z = 0.007
+
+    frame = 0
 
     while True:
         key = stdscr.getch()
         if key in (ord('q'), ord('Q'), 27):  # q or ESC to quit
             break
+
+        # ── Update RGB color ───────────────────────────────────────────────────
+        hue = (hue + HUE_SPEED) % 1.0
+        if rgb_supported:
+            curses.init_color(COLOR_EDGE,   *hsv_to_curses(hue))
+            curses.init_color(COLOR_VERTEX, *hsv_to_curses((hue + 0.5) % 1.0))
+        else:
+            idx = int(hue * len(CYCLE)) % len(CYCLE)
+            curses.init_pair(1, CYCLE[idx], -1)
 
         stdscr.erase()
         H, W = stdscr.getmaxyx()
@@ -151,6 +187,7 @@ def main(stdscr):
         ax += SPEED_X
         ay += SPEED_Y
         az += SPEED_Z
+        frame += 1
         time.sleep(1 / 30)
 
 
