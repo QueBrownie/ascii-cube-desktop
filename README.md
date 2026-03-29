@@ -42,39 +42,39 @@ A minimal Linux desktop environment. The entire UI is a spinning ASCII cube.
 
 Use the [Arch installation guide](https://wiki.archlinux.org/title/Installation_guide). Stop after a working base system with a user account — no desktop environment.
 
-### 2. Clone this repo
+### 2. Install build tools and yay
+
+`install.sh` installs AUR packages, so `yay` is required before running it:
+
+```bash
+sudo pacman -S --needed base-devel git
+git clone https://aur.archlinux.org/yay.git
+cd yay && makepkg -si
+cd .. && rm -rf yay
+```
+
+### 3. Clone this repo
 
 ```bash
 git clone https://github.com/QueBrownie/ascii-cube-desktop.git
 cd ascii-cube-desktop
 ```
 
-### 3. Run the installer
+### 4. Run the installer
+
+The installer handles all packages (including AUR), configs, and services:
 
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-### 4. Install xwinwrap (AUR)
-
-xwinwrap is not in the official repos:
+### 5. Reboot and connect
 
 ```bash
-# With yay
-yay -S xwinwrap-git
-
-# Or manually
-git clone https://aur.archlinux.org/xwinwrap-git.git
-cd xwinwrap-git && makepkg -si
-```
-
-### 5. Reboot and start
-
-```bash
-reboot
-# Log in via ly, then:
-startx
+sudo reboot
+# Log in via ly
+# Connect from Mac via Microsoft Remote Desktop → your VM's IP → port 3389
 ```
 
 ---
@@ -120,9 +120,9 @@ ascii-cube-desktop/
 ### Change cube speed
 Edit `SPEED_X`, `SPEED_Y`, `SPEED_Z` in `cube.py`.
 
-### Change cube color
-Edit the `fg` color in `launch_cube.sh` (the `xterm -fg` argument).
-Default: `#00ff41` (matrix green).
+### Change cube color cycle speed
+Edit `HUE_SPEED` in `cube.py`. Higher = faster rainbow cycle, lower = slower.
+Default: `0.004`. Set to `0` to freeze the color at whatever hue it starts on.
 
 ### Change terminal colorscheme
 Edit `config/kitty/kitty.conf`.
