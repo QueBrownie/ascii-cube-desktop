@@ -25,7 +25,9 @@ sudo pacman -S --needed --noconfirm \
     ttf-jetbrains-mono-nerd \
     unclutter \
     ly \
-    pulseaudio
+    pipewire \
+    pipewire-pulse \
+    wireplumber
 
 echo ""
 echo "==> Installing AUR packages (requires yay)..."
@@ -38,7 +40,7 @@ fi
 yay -S --needed --noconfirm \
     xrdp \
     xorgxrdp \
-    pulseaudio-module-xrdp \
+    pipewire-module-xrdp \
     xwinwrap-git
 
 echo ""
