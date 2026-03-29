@@ -49,10 +49,10 @@ echo ""
 
 echo "==> Copying configs..."
 
-mkdir -p ~/.config/bspwm ~/.config/picom ~/.config/kitty ~/.config/cube
+mkdir -p ~/.config/bspwm ~/.config/sxhkd ~/.config/picom ~/.config/kitty ~/.config/cube
 
 cp "$REPO_DIR/config/bspwm/bspwmrc"   ~/.config/bspwm/bspwmrc
-cp "$REPO_DIR/config/bspwm/sxhkdrc"   ~/.config/bspwm/sxhkdrc
+cp "$REPO_DIR/config/bspwm/sxhkdrc"   ~/.config/sxhkd/sxhkdrc
 cp "$REPO_DIR/config/picom/picom.conf" ~/.config/picom/picom.conf
 cp "$REPO_DIR/config/kitty/kitty.conf" ~/.config/kitty/kitty.conf
 
