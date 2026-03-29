@@ -11,7 +11,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Packages ───────────────────────────────────────────────────────────────────
 
-echo "==> Installing packages..."
+echo "==> Installing packages from official repos..."
 sudo pacman -S --needed --noconfirm \
     xorg-server \
     xorg-xinit \
@@ -25,15 +25,22 @@ sudo pacman -S --needed --noconfirm \
     ttf-jetbrains-mono-nerd \
     unclutter \
     ly \
-    xrdp \
-    xorgxrdp \
-    pulseaudio \
-    pulseaudio-module-xrdp
+    pulseaudio
 
 echo ""
-echo "==> NOTE: xwinwrap must be installed from the AUR."
-echo "    If you have yay:  yay -S xwinwrap-git"
-echo "    If you have paru: paru -S xwinwrap-git"
+echo "==> Installing AUR packages (requires yay)..."
+if ! command -v yay &>/dev/null; then
+    echo "ERROR: yay is not installed. Install it first:"
+    echo "  git clone https://aur.archlinux.org/yay.git"
+    echo "  cd yay && makepkg -si"
+    exit 1
+fi
+yay -S --needed --noconfirm \
+    xrdp \
+    xorgxrdp \
+    pulseaudio-module-xrdp \
+    xwinwrap-git
+
 echo ""
 
 # ── Configs ────────────────────────────────────────────────────────────────────
@@ -109,10 +116,7 @@ echo "  Install complete."
 echo ""
 echo "  Remaining steps:"
 echo ""
-echo "  1. Install xwinwrap from AUR:"
-echo "     yay -S xwinwrap-git"
-echo ""
-echo "  2. Set a static IP for this VM (see above)"
+echo "  1. Set a static IP for this VM (see above)"
 echo ""
 echo "  3. Reboot"
 echo "     sudo reboot"
